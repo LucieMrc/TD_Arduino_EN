@@ -1,4 +1,6 @@
-# TD_Arduino_FR
+# TD_Arduino_EN
+
+*[french version](https://github.com/LucieMrc/TD_Arduino_FR)*
 
 **On how to communicate via Serial between Touchdesigner and Arduino.**
 
