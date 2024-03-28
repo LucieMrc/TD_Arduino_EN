@@ -1,12 +1,12 @@
 # TD_Arduino_FR
 
-**Ou comment créer une communication Serial entre Touchdesigner et Arduino**
+**On how to communicate via Serial between Touchdesigner and Arduino.**
 
-- Le tuto [introduction à Touchdesigner](https://github.com/LucieMrc/IntroTD_FR)
+- The [introduction to Touchdesigner](https://github.com/LucieMrc/IntroTD)
 
 # Set-up
 
-Avoir une arduino branchée à l'ordinateur qui envoit des informations au moniteur série :
+Have an arduino connected to the computer, sending informations to the Serial monitor :
 
 ```
 void setup() {
@@ -20,89 +20,93 @@ void loop() {
   delay(1000);
 }
 ```
-Ici mon code envoie alternativement 0 et 1 toutes les secondes. J'utilise `Serial.write()` au lieu de `Serial.println()` afin d'envoyer mes valeurs sous forme de bytes.
+
+Here, my code sends in turn 0 et 1 every seconds.
+
+I use `Serial.write()` rather than `Serial.println()` so I send the values as bytes.
 
 ![screen du moniteur d'arduino ](./images/screen1.png)
 
-Je reçois bien mes valeurs dans le Serial Monitor de l'IDE Arduino.
+I get all the values in the Serial monitor of the Arduino IDE.
 
-Il faut ABSOLUMENT fermer le Serial Monitor pour que les messages Serial arrivent dans TouchDesigner : l'arduino ne communique qu'avec un à la fois.
-De la même façon, il faut désactiver la réception série dans Touchdesigner pour pouvoir upload du code sur l'arduino, sinon le port sera occupé et le téléversement sera impossible.
+We NEED to close the Serial monitor so the Serial messages arrives in Touchdesigner, as the arduino will only communicates with one at the same time.
+In the same way, we must deactivate the Serial communication in Touchdesigner if we want to upload code on the arduino, otherwise the port will be busy.
 
-Dans TouchDesigner, on crée un `Serial` DAT qui va recevoir et stocker les données dans un tableau.
+In Touchdesigner, we create a `Serial` DAT that will receive and store messages in an array.
 
 ![screen de Touch](./images/screen2.png)
 
-Afin de recevoir les données, il faut d'abord sélectionner le port dans les paramètres du Serial DAT. À droite du paramètre "Port", on clique sur la flèche ➡️ pour voir la liste des ports disponibles.
+In order to get the datas, we first have to select the port in the Serial DAT parameters. We click on the ➡️ arrow on the right of the "Port" parameter to see the list of avaible ports.
 
 ![screen de Touch](./images/screen3.png)
 
-Comme on envoie des données en binaires, il faut sélectionner "One Per Byte" dans le paramètres "Row/Callback Format" (au lieu de "One Per Line" qui est par défaut).
+As we send the datas as bytes, we need to select "One Per Byte" in the "Row/Callback Format" parameter (instead of the default "One Per Line").
 
 ![screen de Touch](./images/screen4.png)
 
-Si tout est bon, on reçoit les données dans le node Serial DAT toutes les secondes.
+If everything is good, we get the datas in the Serial DAT every seconds.
 
-# Récupérer les données
+# Getting the data from Arduino to Touchdesigner
 
 ![screen de Touch](./images/screen5.png)
 
-On crée un `DAT To` CHOP, afin de récupérer la dernière donnée reçue et la "transformer" en valeur utilisable dans TouchDesigner. Il faut faire glisser le `Serial` DAT sur le `DAT To` CHOP afin que le CHOP "regarde" le DAT.
+We create a `DAT To` CHOP, to get the last data received and turn it into a data that we can use.
+We have to drag and drop the `Serial` DAT on top of the `DAT To` CHOP so the CHOP "looks" at the DAT.
 
 ![screen de Touch](./images/screen6.png)
 
-Pour regarder uniquement la dernière ligne (= la dernière donnée reçue), dans le paramètre "Select Rows" on choisit "By Index", puis on prend l'index de la dernière ligne en tant que "Start Row Index" et "End Row Index".
+To look only at the last line (= the last data received), we choose "By Index" in the "Select Rows" parameter. Then, we take the index of the last line for "Start Row Index" and "End Row Index".
 
-Par défaut, il y a 10 lignes dans le Serial DAT, donc je mets 1O pour les deux indexs de rang.
+By default, there is 10 lines in the Serial DAT, so I put 10 for both row indexes.
 
-On peux sélectionner toutes les colonnes vu qu'il n'y a qu'une seule colonne, mais il faut préciser que la donnée de la ligne est la valeur et non le nom de la valeur.
+We can select all columns as there is only one column, but we have to select that the data from the line is the value we want and not the name of the value.
 
 ![screen de Touch](./images/screen7.png)
 
-Dans le paramètre "First Column is", on sélectionne "Values" (au lieu de "Names" par défaut). On a donc une valeur qui a un pour nom "chan1" (le nom par défaut des valeurs dans TouchDesigner) et qui alterne entre 0 et 1.
+To do so, we select "Values" (instead of "Names" by default) in the "First Column is" parameter. We then have a value whose name is "chan1" (default value name in Touchdesigner) and which alternate between 0 et 1.
 
-# Utiliser les données
+# Use the data
 
 <details>
- <summary> Vérifier qu'on est dans une plage de donnée </summary>
+ <summary> Check if the value is on a data range </summary>
 
- On crée un `Logic` CHOP, on coche "Off when outside bounds", et on choisit les Bounds.
+We create a `Logic` CHOP, we check "Off when outside bounds" and we choose the Bounds parameter.
 
 ![screen de Touch](./images/screen12.png)
 
-Le logic est à 1 si on est entre les bornes et à 0 si on n'y est pas.
-On peux choisit une valeur précise en mettant la même chose pour les deux bornes
+The Logic is 1 if the value is between in bounds and 0 if outside. 
+We can choose a precise value by putting the same number in both bounds.
 
 </details>
 
  <details>
- <summary> Changer la plage de données </summary>
+ <summary> Change the data range </summary>
 
-On crée un `Math` CHOP, on va dans l'onglet "Range" des paramètres, on met le minimum et maximum de la plage de données actuelle dans le paramètre "From Range" et le minimum et maximum de la plage de données souhaitées dans le paramètre "To Range".
+ We create a `Math` CHOP and we go to the "Range" tab of the parameter window.
+ We put the minimum and maximum of the current data range in the "From Range" parameter, and the minimum and maxium of the desired data range in the "To Range" parameter.
 
 ![screen de Touch](./images/screen13.png)
 
-La valeur est recalculée de manière proportionnelle.
+The value is remapped proportionally.
 
 </details>
 
 
 <details>
- <summary> Interpoler les valeurs </summary>
+ <summary> Interpolate the values </summary>
 
-On crée un `Filter` CHOP, on choisit la durée du filtre dans le paramètre "Filter Width".
+ We create a `Filter` CHOP, we chose the length of the filter in the "Filter Width parameter".
 
 ![screen de Touch](./images/screen14.png)
 
-La courbe est adoucie.
-
+The data curve is smoothed.
 
 </details>
 
-# Envoyer des données
+# Sending data to Arduino from Touchdesigner
 
-Avoir une arduino branchée à l'ordinateur qui reçoit des informations :
-
+Having an arduino connecting to the computer that receives Serial messages :
+ 
 ```
 int incomingByte = 0;
 
@@ -112,50 +116,50 @@ void setup() {
 
 void loop() {
   if (Serial.available() > 0) {
-    incomingByte = Serial.read(); // on stock ce que les messages reçus en série dans la variable incomingByte
+    incomingByte = Serial.read(); // storing the messages received into the variable incomingByte
 
-    Serial.println(incomingByte); // on print le message reçu
+    Serial.println(incomingByte); // printing the message received
   }
 }
 ```
 
-On garde le moniteur série fermé dans l'IDE Arduino pour que le port soit libre pour communiquer avec Touchdesigner.
+We keep the Serial monitor closed in the Arduino IDE so the port can be free to communicate with TouchDesigner.
 
 ![screen de Touch](./images/screen8.png)
 
-Dans Touchdesigner, on crée un `Serial` DAT, et comme pour la réception de donnée on choisit le port à laquelle est connectée l'Arduino.
+In Touchdesigner, we create a `Serial` DAT, and like for the data reception, we choose the port on which the Arduino is connected.
 
-Pour envoyer par exemple la valeur d'un slider, on crée un `Slider` COMP connecté à un `Null` CHOP.
+To send for example the value of a slider, we create a `Slider` COMP connected to a `Null` CHOP.
 
 ![screen de Touch](./images/screen9.png)
 
-Ensuite on crée un `CHOP Execute` DAT, qui va servir à exécuter un script en fonction du comportement d'un CHOP.
+Then, we create a `CHOP Execute` DAT to execute a script based on the behavior of a CHOP. 
 
-Le CHOP Execute contient plusieurs fonctions :
-- `offToOn` : s'exécute quand la valeur du CHOP passe de 0 à 1
-- `whileOn` : s'exécute quand la valeur du CHOP est 1
-- `onToOff` : s'exécute quand la valeur du CHOP passe de 1 à 0
-- `whileOff` : s'exécute quand la valeur du CHOP est 0
-- `valueChange` : s'exécute quand la valeur du CHOP change
+The CHOP Execute has multiple functions :
+- `offToOn` : runs when the value from the CHOP goes from 0 to 1
+- `whileOn` : runs when the value from the CHOP is 1
+- `onToOff` : runs when the value from the CHOP goes from 1 to 0
+- `whileOff` : runs when the value from the CHOP is 0
+- `valueChange` : runs when the value from the CHOP changes
 
-Les arguments des fonctions sont définis comme :
+T
+The arguments of the various functions are defined as :
 - channel - the Channel object which has changed
 - sampleIndex - the index of the changed sample
 - val - the numeric value of the changed sample
 - prev - the previous sample value
 
-On fait glisser le `null1` CHOP sur le CHOP Execute afin que ce soit celui là qui est "écouté" (son nom apparaît dans le paramètres "CHOPs").
+We drag and drop the `null1` CHOP on the CHOP Execute so it is the CHOP whose behavior is "listened to" (its name appears in the parameter "CHOPs").
 
-On coche le paramètre "Value Change" afin que ce soit cette fonction qui s'exécute, car on veux envoyer la valeur du slider dès qu'elle change. 
+We check the "Value Change" parameter so the function can run, as we went to change the value of slider when it changes.
 
 ![screen de Touch](./images/screen10.png)
 
-En écrivant ``op('serial1').send(val,  terminator='\r\n')`` dans la fonction valueChange, on envoie ainsi la valeur du CHOP au DAT "serial1" qui communique avec l'arduino.
+By writing ``op('serial1').send(val,  terminator='\r\n')`` in the valueChange function, we send the value of the CHOP to the "serial1" DAT which communicates with the arduino.
 
-"terminator='\r\n'" sert à terminer le message pour séparer les messages entre eux.
+"terminator='\r\n'" it is used to terminate the message to separate messages from each other.
 
 ![screen de Touch](./images/screen11.png)
 
-# Aller + loin
-
-# TD_Arduino_EN
+# To go further
+...
